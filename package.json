@@ -1,0 +1,23 @@
+{
+  "name": "farecloud-docs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "aglio -i ./api.apib -o ./public/index.html"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sannysoft/farecloud-docs.git"
+  },
+  "author": "Farecloud",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sannysoft/farecloud-docs/issues"
+  },
+  "homepage": "https://github.com/sannysoft/farecloud-docs#readme",
+  "dependencies": {
+    "aglio": "^2.3.0"
+  }
+}
