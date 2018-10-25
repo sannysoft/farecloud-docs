@@ -1,0 +1,36 @@
+{
+    "signature": "nl5dqUgM5fMHOPKrAywuPaSJKOMIXq7t7AEFiRqzm3i6v9gKUD_LuZlBEqsTPKgBc-c4RE6sE55eDUbWQhUA7fsf6V4l-hTDA43DvtiDhCJkJCYL6QXQDc1TxgjGfBE4GDfatMG_hNLENy__SHl6xuxEArdtOjaupqNYeH3ZUsziD0JhU7CHbEcSUnUoEY5dKbSYaE_hemSGO-bIz_vuzyUYqRTHCBr8zTuH8htXyC5yTOvgZ20_9xxgSFnAXwFGmAOVa1wnq6oz2FDDOaJ_v2FAiCrEYDusuDB4xmnmWPgUa1_21y6Ch4gqpAlQnHI2OqYdEum-FqqIWOFdgaQlU97GBxAXFTxDRta_wnD-D7Y1",
+    "status": "available",
+    "price": {
+        "amount": 37.3,
+        "currency": "EUR"
+    },
+    "flights": [{
+        "marketingCarrier": "FD",
+        "operatingCarrier": "FD",
+        "departureDateTime": "2019-01-25 19:55",
+        "arrivalDateTime": "2019-01-25 21:20",
+        "cabin": "Y",
+        "plane": "",
+        "arrivalTerminal": "",
+        "departureTerminal": "",
+        "number": "3033",
+        "from": "DMK",
+        "to": "HKT",
+        "bookingClass": "",
+        "segmentIndex": 0,
+        "includedLuggage": "",
+        "handLuggage": {
+            "dimensions": "56x36x23",
+            "weight": 7
+        }
+    }],
+    "luggageOptions": [],
+    "passportRequired": true,
+    "passengers": {
+        "adults": 1,
+        "children": 0,
+        "infants": 0
+    },
+    "fareRules": "Non-refundable and non-changeable"
+}

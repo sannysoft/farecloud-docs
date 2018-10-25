@@ -1,0 +1,288 @@
+FORMAT: 1A
+HOST: https://api.farecloud.io
+
+# Farecloud API
+API lets you search and book flight tickets
+
+## Authentication
+This API uses Basic Authentication for its authentication. Example:
+
+```
+Authorization: Basic ABC123
+```
+
+You will be given a 401 HTTP status response in case of a failed authentication.
+
+# Group API Methods
+
+## Search [/search{?from,to,date1,date2,adults,children,infants,limit}]
+
+The result will contain number of bookable variants each consisting of price, signature and array of flights.
+
+### Search for flights [GET]
+
++ Parameters
+
+    + from: `BKK` (string, required) - Origin IATA-code
+    + to: `HKT` (string, required) - Destination IATA-code
+    + date1: `2019-01-25` (string, required) - Date of departure. Format is yyyy-mm-dd
+    + date2: `2019-02-02` (string, optional) - Date of return flight (for round trip flights). Format is yyyy-mm-dd
+    + adults: `1` (number, required) - Number of adults flying. Minimum  is 1
+    + children: `0` (number, optional) - Number of children flying
+        + Default: `0`
+    + infants: `0` (number, optional) - Number of infants flying. Should be less or equal to number of adults
+        + Default: `0`
+    + limit: `200` (number, optional) - Limit number of results
+        + Default: `300`
+
+
++ Response 200 (application/json)
+
+    Search response containing bookable flight options (variants).
+
+    + Body
+
+            <!-- include(search_response.json) -->
+
+    + Attributes (Search response)
+
+# Validate [/validate{?signature,adults,children,infants}]
+
+Validate price & availability
+
+### Validate price & availability [GET]
+
++ Parameters
+    + signature: `0_DMK_HKT_FD_3033_25JAN2019_1955_25JAN2019_2120` (string, required) - Signature of the variant you are checking price for
+    + adults: `1` (number, required) - Number of adults
+    + children: `0` (number, optional) - Number of children
+        + Default: `0`
+    + infants: `0` (number, optional) - Number of infants
+        + Default: `0`
+
+
++ Response 200 (application/json)
+
+    Validation response contains result of price and availability check
+
+    + Body
+
+            <!-- include(validate_response.json) -->
+
+    + Attributes (Validate response)
+
+
+
+# Book [/book]
+
+Book tickets
+
+## Create booking [POST]
+
++ Request
+
+    + Headers
+
+            Authorization: Basic ABC123
+
+    + Attributes (Booking request)
+
+
++ Response 200 (application/json)
+
+        Booking response containing status of the booking and farecloud id if succesfull
+
+    + Attributes (Booking response)
+
+
+
+# Issue [/issue{?bookingId,expectedPrice}]
+
+Issue tickets
+
+## Issue tickets [GET]
+
++ Parameters
+    + bookingId: `A7B312X`  (string, required) - Farecloud booking id returned from the booking stage. This is the id of the booking you want to issue
+    + expectedPrice: `120.53` (number, required) - Same as in booking request. Amount of money in base currency you expect to pay for the tickets. expectedPrice should consist of ticket price + luggage price (if any). We recommend to add 0.5% of price on top to pass price check in case of any currency rates change. If expectedPrice param is less than real price the booking process will fail and error is returned
+
+
++ Response 200 
+    + Attributes (object)
+
+
+
+# Data Structures
+
+## Search response (object)
+Search response containing bookable flight options (variants)
+
+### Properties
++ `status` (enum[string], required)
+    + `ok` - Succesfull search request
+    + `error` - Result should also contain text "message" field with error details
++ `variants` (array[Variant], optional)
+
+
+## Variant (object)
+
+
+### Properties
++ `price` (Money, required) - Money type represents some amount of money
++ `signature` (string, required) - Signature identifies combination of flights and is used for further steps like validation and booking
++ `flights` (array[Flight], required) 
+
+
+## Money (object)
+Money type represents some amount of money
+
+### Properties
++ currency: `EUR` (string, required) - Currency 3-char code according to ISO
++ amount: `94.12` (number, required) - Amount represents value of the monetary object. It is floating point number
+
+
+## Flight (object)
+
+
+### Properties
++ marketingCarrier: `FD` (string, required) - IATA-code of the airline that sells the ticket unders it's name
++ operatingCarrier: `FD` (string, required) - IATA-code of the airline that owns the plane and operates the flight
++ departureDateTime: `2019-02-10 10:30` (string, required) - Date and time in YYYY-MM-DD hh:mm format. Represents local (not UTC) time of departure/arrival
++ arrivalDateTime: `2019-02-10 12:30` (string, required) -  Date and time in YYYY-MM-DD hh:mm format.  Represents local (not UTC) time of departure/arrival
++ `cabin` (enum[string], required)
+    + `Y` - Economy class
+    + `C` - Business class
++ plane: `320` (string, required) - Aircrafrt iata-code. Blank if unknown
++ departureTerminal: `T` (string, required) - Digit or char representing origin airport terminal. Blank if airport has single terminal or if not specified
++ arrivalTerminal: `1` (string, required) - Digit or char representing destination airport terminal. Blank if airport has single terminal or if not specified
++ number: `3202` (string, required)- Digital part of flight number.   Full flight number consists of marketing carrier + flight number
++ from: `BKK` (string, required) - IATA-code of origin airport
++ to: `HKT` (string, required) - IATA-code of destination airport
++ bookingClass (string, required) - Booking class or tariff name. Empty if unknown/not specified
++ segmentIndex: `0` (enum[number], required)
+    + `0` - flights from origin to destination
+    + `1` - return flights
++ includedLuggage: `20` (string, required)
+    Free luggage allowance in kg splitted by bags. 
+    Format: (max bag weight in kg)+(max bag weight in kg).
+    Examples: 
+    - "" or "0" for no luggage
+    - "20" for 20kg single bag
+    - "25+25" for 2 bags not more than 25 kg each
+
++ `handLuggage` (Hand luggage, required)
+
+
+## Hand luggage (object)
+Represents hand luggage free allowance
+
+### Properties
++ dimensions: `55x40x20` (string, required)
+
+    Important: This information is taked from Farecloud database and may not be 100% correct all the time. We recommend to use other sources of the information to determine included hand luggage
+    
+    Maximum dimensions of the luggage piece in cm
+    
+    Format: (width)x(height)x(depth)
+
++ weight: `10` (number, required) - Maximum weight in kilograms
+
+
+## Validate response (object)
+Validation response contains result of price and availability check
+
+### Properties
++ status (enum[string], required)
+    + `available` - Validation was successfull
+    + `unavailable` - Can't be booked at the moment (no seats etc)
+    + `error` - All other situations
++ `signature` (string, required) - Used to proceed with booking
++ price (Money, required) - Money type represents some amount of money
++ flights (array[Flight], required) 
++ passportRequired (boolean, required) - Shows if passport details (number and expiration date) is required to book tickets
++ passengers (Passengers count, optional) 
++ fareRules: `Non-refundable and non-changeable` (string, required) 
++ luggageOptions (array[Luggage option], required) 
+
+
+## Passengers count (object)
+
+
+### Properties
++ `adults` (number, required) - Number of adults.
++ `children` (number, required) - Number of children.
++ `infants` (number, required) - Number of infants.
+
+
+## Booking request (object)
+
+
+### Properties
++ email: `test@example.com` (string, required) - This email address will be used to send time change/cancellation emails from the airline
++ phone: `+12345678912` (string, required) - Required format: +(country phone code) (area code) (full number)
++ ipAddress: `1.1.1.1` (string, required) - We recommend to pass real customer ip address here. In case it's not available - you can use 1.1.1.1
++ userAgent: `Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.67 Safari/537.36` (string, required) - We recommend to pass real customer real user agent. You can pass empty string if the information is not available.
++ requestOrigin: `bestflights_com-en` (string, required) - Should contain the website domain / company name and locale used to book tickets 
++ signature: `nl5dqUgM5fMHOPKrAywuPaSJKOMIXq7t7AEFiRqzm3i6v9gKUD_LuZlBEqsTPKgBc-c4RE6sE55eDUbWQhUA7fsf6V4l-hTDA43DvtiDhCJkJCYL6QXQDc1TxgjGfBE4GDfatMG_hNLENy__SHl6xuxEArdtOjaupqNYeH3ZUsziD0JhU7CHbEcSUnUoEY5dKbSYaE_hemSGO-bIz_vuzyUYqRTHCBr8zTuH8htXyC5yTOvgZ20_9xxgSFnAXwFGmAOVa1wnq6oz2FDDOaJ_v2FAiCrEYDusuDB4xmnmWPgUa1_21y6Ch4gqpAlQnHI2OqYdEum-FqqIWOFdgaQlU97GBxAXFTxDRta_wnD-D7Y1` (string, required) - Signature representing the flights (received from the validation step)
++ passengers (array[Passenger details], required) - List of passengers details. Passengers count should be the same as in the validation request.
++ luggageCode: `20` (string, required) - Should be empty string if no extra luggage is selected
++ localId: `12853` (string, optional) - Your local booking id. Used to find bookings at Farecloud hub easier and to match your bookings with Farecloud
+
++ expectedPrice: `120.53` (number, required)
+
+    Should consist of ticket price + luggage price (if any)
+    We recommend to add 0.5% of price on top to pass price check in case of any currency rates change.
+    If expectedPrice param is less than real price the booking process will fail and error is returned
+
++ issue: `false` (boolean, optional)
+
+    We recommend to set this flag to true for all bookings.
+    At the moment Farecloud doesn't allow holding seats with book method so there is not many reasons to call issue separately instead of setting flag.
+
+
+
+## Passenger details (object)
+This object contains details of a particular passenger
+
+### Properties
++ firstName: `Bill` (string, required) - May contain multiple words or complex names like "MARIA-ELENA"
++ lastName: `Gates` (string, required) - May conain compex last names
++ gender: `M` (enum[string], required)
+    + `M` - Male
+    + `F` - Female
++ dateOfBirth: `1980-02-25` (string, required) - Format: YYYY-MM-DD
++ nationality: `US` (string, required) - Country code according to ISO 3166-1 alpha-2
++ passportNumber: `71843985` (string, optional)
+
+    Passport/id card/other permitted document number that customer should carry when flying. 
+    This field is required if passportRequired is true at the validation stage
+
++ passportExpirationDate: `2024-05-25` (string, optional)
+
+    Passport/id card/other permitted document expiration date that customer should carry when flying. If the document doesn't have expiration date it can in rare cases be ommited.
+    The date should be after the last flight date.
+    This field is required if passportRequired is true at the validation stage
+    Format: YYYY-MM-DD
+
+
+## Booking response (object)
+Booking response containing status of the booking and farecloud id if succesfull
+
+### Properties
++ status (enum[string], required)
+    + `booked` - Succesfullyt booked
+    + `error` - Result should also contain text "message" field with error details
++ bookingId: `A7B312X` (string, optional) - Unique farecloud booking id - save it for future use
+
+## Luggage option (object)
+Represents purchasable extra luggage
+
+### Properties
++ code: 20 (string, required)
+    Luggage allowance in kg splitted by bags. 
+    Format: (max bag weight in kg)+(max bag weight in kg)
+    Examples: 
+    "" or "0" for no luggage
+    "20" for 20kg single bag
+    "25+25" for 2 bags not more than 25 kg each
++ price (Money, required) - Price of the extra luggage
