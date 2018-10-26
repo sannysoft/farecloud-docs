@@ -1,0 +1,733 @@
+openapi: 3.0.0
+info:
+  title: Farecloud API
+  description: 'TODO: Add a description'
+  contact: {}
+  version: '1.0'
+servers:
+- url: https://api.farecloud.io
+  variables: {}
+paths:
+  /search:
+    get:
+      tags:
+      - API Methods
+      summary: Search for flights
+      description: The result will contain number of bookable variants each consisting of price, signature and array of flights.
+      operationId: SearchForFlights
+      parameters:
+      - name: from
+        in: query
+        description: Origin IATA-code
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+          example: BKK
+      - name: to
+        in: query
+        description: Destination IATA-code
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+          example: HKT
+      - name: date1
+        in: query
+        description: |
+          Date of departure.
+
+          Format is `yyyy-mm-dd`
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+          example: 2019-01-25
+      - name: date2
+        in: query
+        description: |
+          Date of return flight (for round trip flights).
+
+          Format is `yyyy-mm-dd`
+        style: form
+        explode: true
+        schema:
+          type: string
+          example: 2019-02-02
+          format: date
+      - name: adults
+        in: query
+        description: Number of adults flying
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: number
+          example: 1
+          minimum: 1
+          maximum: 9
+      - name: children
+        in: query
+        description: Number of children flying
+        style: form
+        explode: true
+        schema:
+          type: number
+          example: 0
+          default: 0
+      - name: infants
+        in: query
+        description: Number of infants flying. Should be less or equal to number of adults
+        style: form
+        explode: true
+        schema:
+          type: number
+          example: 0
+          default: 0
+      - name: limit
+        in: query
+        description: Limit number of results
+        style: form
+        explode: true
+        schema:
+          type: number
+          example: 200
+          default: 300
+      responses:
+        200:
+          description: Search response containing bookable flight options (variants).
+          content:
+            application/json:
+              schema:
+                description: Search response containing bookable flight options (variants).
+                $ref: '#/components/schemas/SearchResponse'
+      security:
+      - httpBasic: []
+      x-operation-settings:
+        CollectParameters: false
+        AllowDynamicQueryParameters: false
+        AllowDynamicFormParameters: false
+        IsMultiContentStreaming: false
+  /validate:
+    get:
+      tags:
+      - API Methods
+      summary: Validate price & availability
+      description: Validate price & availability
+      operationId: ValidatePrice&Availability
+      parameters:
+      - name: signature
+        in: query
+        description: Signature of the variant you are checking price for
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+          example: 0_DMK_HKT_FD_3033_25JAN2019_1955_25JAN2019_2120
+      - name: adults
+        in: query
+        description: Number of adults
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: number
+          example: 1
+          minimum: 1
+          maximum: 9
+      - name: children
+        in: query
+        description: Number of children
+        style: form
+        explode: true
+        schema:
+          type: number
+          example: 0
+          default: 0
+      - name: infants
+        in: query
+        description: Number of infants
+        style: form
+        explode: true
+        schema:
+          type: number
+          example: 0
+          default: 0
+      responses:
+        200:
+          description: Validation response contains result of price and availability check
+          content:
+            application/json:
+              schema:
+                description: Validation response contains result of price and availability check
+                $ref: '#/components/schemas/ValidateResponse'
+      security:
+      - httpBasic: []
+      x-operation-settings:
+        CollectParameters: false
+        AllowDynamicQueryParameters: false
+        AllowDynamicFormParameters: false
+        IsMultiContentStreaming: false
+  /book:
+    post:
+      tags:
+      - API Methods
+      summary: Create booking
+      description: Book tickets
+      operationId: CreateBooking
+      parameters: []
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BookingRequest'
+        required: true
+      responses:
+        200:
+          description: Booking response containing status of the booking and farecloud id if succesfull
+          content:
+            application/json:
+              schema:
+                description: Booking response containing status of the booking and farecloud id if succesfull
+                example:
+                  status: booked
+                  bookingId: A7B312X
+                $ref: '#/components/schemas/BookingResponse'
+              example:
+                status: booked
+                bookingId: A7B312X
+      security:
+      - httpBasic: []
+      x-operation-settings:
+        CollectParameters: false
+        AllowDynamicQueryParameters: false
+        AllowDynamicFormParameters: false
+        IsMultiContentStreaming: false
+  /issue:
+    get:
+      tags:
+      - API Methods
+      summary: Issue tickets
+      description: Issue tickets
+      operationId: IssueTickets
+      parameters:
+      - name: bookingId
+        in: query
+        description: Farecloud booking id returned from the booking stage. This is the id of the booking you want to issue
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+          example: A7B312X
+      - name: expectedPrice
+        in: query
+        description: Same as in booking request. Amount of money in base currency you expect to pay for the tickets. expectedPrice should consist of ticket price + luggage price (if any). We recommend to add 0.5% of price on top to pass price check in case of any currency rates change. If expectedPrice param is less than real price the booking process will fail and error is returned
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: number
+          example: 120.53
+      responses:
+        200:
+          description: ''
+          content:
+            text/plain:
+              schema:
+                type: object
+      security:
+      - httpBasic: []
+      x-operation-settings:
+        CollectParameters: false
+        AllowDynamicQueryParameters: false
+        AllowDynamicFormParameters: false
+        IsMultiContentStreaming: false
+components:
+  schemas:
+    SearchResponse:
+      title: Search response
+      required:
+      - status
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/Status'
+        variants:
+          type: array
+          items:
+            $ref: '#/components/schemas/Variant'
+          description: ''
+      description: Search response containing bookable flight options (variants)
+    Status:
+      title: status
+      enum:
+      - ok
+      - error
+      type: string
+      example: ok
+      x-enum-elements:
+      - name: ok
+        description: Succesfull search request
+      - name: error
+        description: Result should also contain text "message" field with error details
+    Variant:
+      title: Variant
+      required:
+      - price
+      - signature
+      - flights
+      type: object
+      properties:
+        price:
+          description: Money type represents some amount of money
+          $ref: '#/components/schemas/Money'
+        signature:
+          type: string
+          description: Signature identifies combination of flights and is used for further steps like validation and booking
+        flights:
+          type: array
+          items:
+            $ref: '#/components/schemas/Flight'
+          description: ''
+    Money:
+      title: Money
+      required:
+      - currency
+      - amount
+      type: object
+      properties:
+        currency:
+          type: string
+          description: Currency 3-char code according to ISO
+          example: EUR
+        amount:
+          type: number
+          description: Amount represents value of the monetary object. It is floating point number
+          example: 94.12
+      description: Money type represents some amount of money
+    Flight:
+      title: Flight
+      required:
+      - marketingCarrier
+      - operatingCarrier
+      - departureDateTime
+      - arrivalDateTime
+      - cabin
+      - plane
+      - departureTerminal
+      - arrivalTerminal
+      - number
+      - from
+      - to
+      - bookingClass
+      - segmentIndex
+      - includedLuggage
+      - handLuggage
+      type: object
+      properties:
+        marketingCarrier:
+          type: string
+          description: IATA-code of the airline that sells the ticket unders it's name
+          example: FD
+        operatingCarrier:
+          type: string
+          description: IATA-code of the airline that owns the plane and operates the flight
+          example: FD
+        departureDateTime:
+          type: string
+          description: |
+            Represents local (not UTC) time of departure.
+
+            Format: `YYYY-MM-DD hh:mm`
+          example: 2019-02-10 10:30
+        arrivalDateTime:
+          type: string
+          description: |
+            Represents local (not UTC) time of arrival.
+
+            Format: `YYYY-MM-DD hh:mm`
+          example: 2019-02-10 12:30
+        cabin:
+          $ref: '#/components/schemas/Cabin'
+        plane:
+          type: string
+          description: Aircrafrt iata-code. Blank if unknown
+          example: 320
+        departureTerminal:
+          type: string
+          description: |
+            Digit or char representing origin airport terminal.
+
+            Blank if airport has single terminal or if not specified
+          example: T
+        arrivalTerminal:
+          type: string
+          description: |
+            Digit or char representing destination airport terminal.
+
+            Blank if airport has single terminal or if not specified
+          example: 1
+        number:
+          type: string
+          description: |
+            Digital part of flight number.
+
+            Full flight number consists of marketing carrier + flight number
+          example: 3202
+        from:
+          type: string
+          description: IATA-code of origin airport
+          example: BKK
+        to:
+          type: string
+          description: IATA-code of destination airport
+          example: HKT
+        bookingClass:
+          type: string
+          description: |
+            Booking class or tariff name.
+
+            Blank if unknown/not specified
+        segmentIndex:
+          example: 0
+          $ref: '#/components/schemas/SegmentIndex'
+        includedLuggage:
+          $ref: '#/components/schemas/Luggage'
+        handLuggage:
+          description: Represents hand luggage free allowance
+          $ref: '#/components/schemas/HandLuggage'
+    Cabin:
+      title: cabin
+      enum:
+      - Y
+      - C
+      type: string
+      example: Y
+      x-enum-elements:
+      - name: Y
+        description: Economy class
+      - name: C
+        description: Business class
+    SegmentIndex:
+      title: segmentIndex
+      enum:
+      - 0
+      - 1
+      type: integer
+      example: 0
+      x-enum-elements:
+      - name: Enum_0
+        description: flights from origin to destination
+      - name: Enum_1
+        description: return flights
+    HandLuggage:
+      title: Hand luggage
+      required:
+      - dimensions
+      - weight
+      type: object
+      properties:
+        dimensions:
+          type: string
+          description: |
+            **Important: This information is taken from Farecloud database and may not be 100% correct all the time.**
+
+            **We recommend to use other sources of the information to determine included hand luggage accurately.**
+
+            Maximum dimensions of the luggage piece in cm
+
+            Format: `(width)x(height)x(depth)`
+          example: 55x40x20
+        weight:
+          type: number
+          description: Maximum weight in kilograms
+          example: 10
+      description: Represents hand luggage free allowance
+    ValidateResponse:
+      title: Validate response
+      required:
+      - status
+      - signature
+      - price
+      - flights
+      - passportRequired
+      - fareRules
+      - luggageOptions
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/ValidationStatus'
+        signature:
+          type: string
+          description: Used to proceed with booking
+        price:
+          description: Total price for all passengers
+          $ref: '#/components/schemas/Money'
+        flights:
+          type: array
+          items:
+            $ref: '#/components/schemas/Flight'
+          description: Flights
+        passportRequired:
+          type: boolean
+          description: Shows if passport details (number and expiration date) is required to book tickets
+        passengers:
+          $ref: '#/components/schemas/PassengersCount'
+        fareRules:
+          type: string
+          description: Variant fare rules
+          example: Non-refundable and non-changeable
+        luggageOptions:
+          type: array
+          items:
+            $ref: '#/components/schemas/LuggageOption'
+          description: Purchasable extra luggage options for this variant.
+      description: Validation response contains result of price and availability check
+    ValidationStatus:
+      title: Validation status
+      enum:
+      - available
+      - unavailable
+      - error
+      type: string
+      example: available
+      x-enum-elements:
+      - name: available
+        description: Validation was successfull
+      - name: unavailable
+        description: Can't be booked at the moment (no seats etc)
+      - name: error
+        description: All other situations
+    PassengersCount:
+      title: Passengers count
+      required:
+      - adults
+      - children
+      - infants
+      type: object
+      properties:
+        adults:
+          type: number
+          description: Number of adults.
+          example: 1
+        children:
+          type: number
+          description: Number of children.
+          example: 0
+        infants:
+          type: number
+          description: Number of infants.
+          example: 0
+    LuggageOption:
+      title: Luggage option
+      required:
+      - code
+      - price
+      type: object
+      properties:
+        code:
+          $ref: '#/components/schemas/Luggage'
+        price:
+          description: Price of the option
+          $ref: '#/components/schemas/Money'
+      description: Represents purchasable extra luggage
+    BookingRequest:
+      title: Booking request
+      required:
+      - email
+      - phone
+      - ipAddress
+      - userAgent
+      - requestOrigin
+      - signature
+      - passengers
+      - luggageCode
+      - expectedPrice
+      type: object
+      properties:
+        email:
+          type: string
+          description: This email address will be used to send time change/cancellation emails from the airline
+          example: test@example.com
+          format: email
+        phone:
+          type: string
+          description: |
+            Customer phone number
+
+            Required format: +(country phone code) (area code) (full number)`
+          example: +12345678912
+        ipAddress:
+          type: string
+          description: |
+            We recommend to pass real customer ip address here.
+
+            In case it's not available - you can use 1.1.1.1
+          example: 1.1.1.1
+        userAgent:
+          type: string
+          description: |
+            We recommend to pass real customer real user agent.
+
+            You can pass empty string if the information is not available.
+          example: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.67 Safari/537.36
+        requestOrigin:
+          type: string
+          description: Should contain the website domain / company name and locale used to book tickets
+          example: bestflights_com-en
+        signature:
+          type: string
+          description: Signature representing the flights (received from the validation step)
+          example: nl5dqUgM5fMHOPKrAywuPaSJKOMIXq7t7AEFiRqzm3i6v9gKUD_LuZlBEqsTPKgBc-c4RE6sE55eDUbWQhUA7fsf6V4l-hTDA43DvtiDhCJkJCYL6QXQDc1TxgjGfBE4GDfatMG_hNLENy__SHl6xuxEArdtOjaupqNYeH3ZUsziD0JhU7CHbEcSUnUoEY5dKbSYaE_hemSGO-bIz_vuzyUYqRTHCBr8zTuH8htXyC5yTOvgZ20_9xxgSFnAXwFGmAOVa1wnq6oz2FDDOaJ_v2FAiCrEYDusuDB4xmnmWPgUa1_21y6Ch4gqpAlQnHI2OqYdEum-FqqIWOFdgaQlU97GBxAXFTxDRta_wnD-D7Y1
+        passengers:
+          type: array
+          items:
+            $ref: '#/components/schemas/PassengerDetails'
+          description: |
+            List of passengers details.
+
+            Passengers count should be the same as in the validation request.
+        luggageCode:
+          type: string
+          description: Should be empty string if no extra luggage is selected
+          example: 20
+        localId:
+          type: string
+          description: |
+            Your local booking id.
+
+            Used to find bookings at Farecloud hub easier and to match your bookings with Farecloud
+          example: 12853
+        expectedPrice:
+          type: number
+          description: |
+            Should consist of ticket price + luggage price (if any)
+
+            We recommend to add 0.5% of price on top to pass price check in case of any currency rates change.
+
+            **If expectedPrice param is less than real price the booking process will fail and error is returned**
+          example: 120.53
+        issue:
+          type: boolean
+          description: |
+            **We recommend to set this flag to true for all bookings.**
+
+            At the moment Farecloud doesn't allow holding seats with book method so there is not many reasons to call issue separately instead of setting flag.
+          example: false
+    PassengerDetails:
+      title: Passenger details
+      required:
+      - firstName
+      - lastName
+      - gender
+      - dateOfBirth
+      - nationality
+      type: object
+      properties:
+        firstName:
+          type: string
+          description: May contain multiple words or complex names like "MARIA-ELENA"
+          example: Bill
+        lastName:
+          type: string
+          description: May conain compex last names
+          example: Gates
+        gender:
+          example: M
+          $ref: '#/components/schemas/Gender'
+        dateOfBirth:
+          type: string
+          description: Format: YYYY-MM-DD`
+          example: 1980-02-25
+        nationality:
+          type: string
+          description: Country code according to ISO 3166-1 alpha-2
+          example: US
+        passportNumber:
+          type: string
+          description: |
+            Passport/id card/other permitted document number that customer should carry when flying.
+
+            **This field is required if passportRequired is true at the validation stage**
+          example: 71843985
+        passportExpirationDate:
+          type: string
+          description: |
+            Passport/id card/other permitted document expiration date that customer should carry when flying. If the document doesn't have expiration date it can in rare cases be ommited.
+
+            **The date should be after the last flight date.**
+
+            **This field is required if passportRequired is true at the validation stage**
+
+            Format: `YYYY-MM-DD`
+          example: 2024-05-25
+      description: This object contains details of a particular passenger
+    Luggage:
+      title: luggage
+      type: string
+      example: 20
+      description: |
+        Luggage allowance in kg splitted by bags.
+
+        Format: `(max bag weight in kg)+(max bag weight in kg)`
+
+        **Examples:**
+
+        * "" or "0" for no luggage
+        * "20" for 20kg single bag
+        * "25+25" for 2 bags not more than 25 kg each
+    Gender:
+      title: gender
+      enum:
+      - M
+      - F
+      type: string
+      example: M
+      x-enum-elements:
+      - name: M
+        description: Male
+      - name: F
+        description: Female
+    BookingResponse:
+      title: Booking response
+      required:
+      - status
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/BookingStatus'
+        bookingId:
+          type: string
+          description: Unique farecloud booking id - save it for future use
+          example: A7B312X
+      description: Booking response containing status of the booking and farecloud id if succesfull
+      example:
+        status: booked
+        bookingId: A7B312X
+    BookingStatus:
+      title: Booking status
+      enum:
+      - booked
+      - error
+      type: string
+      example: booked
+      x-enum-elements:
+      - name: booked
+        description: Succesfully booked
+      - name: error
+        description: Result should also contain text "message" field with error details
+  securitySchemes:
+    httpBasic:
+      type: http
+      scheme: basic
+security:
+- httpBasic: []
+tags:
+- name: API Methods
+  description: ''
