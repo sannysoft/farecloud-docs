@@ -42,7 +42,7 @@ info:
     | [AirHex](https://airhex.com/pricing/) | Full database + airline logos | High | $1080 |
     | [Aviation Edge](https://aviation-edge.com/database-download/) | Full database | High | $199 |
     | [Our Airports](http://ourairports.com/data/) | Airports + Countries | Medium | Free |
-    | [Open Flights](https://github.com/jpatokal/openflights/tree/master/data) | Full database | Free | Inaccurate |
+    | [Open Flights](https://github.com/jpatokal/openflights/tree/master/data) | Full database | Inaccurate | Free |
 
     ## Authentication
 
