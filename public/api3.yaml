@@ -1,9 +1,50 @@
 openapi: 3.0.0
 info:
   title: Farecloud API
-  description: 'TODO: Add a description'
-  contact: {}
+  description: |
+    Farecloud API allows you to search for flights and availability and book tickets.
+
+    # Concept
+
+    to be done
+
+    # Farecloud Hub
+
+    to be done
+
+    # Implementation details
+
+    ## Countries, Airports, Carriers data
+
+    to be done
+
+    ## Authentication
+
+    Petstore offers two forms of authentication:
+    - API Key
+    - OAuth2
+    OAuth2 - an open protocol to allow secure authorization in a simple
+    and standard method from web, mobile and desktop applications.
+
+    <security-definitions />
+
+    ## Error handling
+
+    to be done
+
+    ## Testing
+
+    to be done
+
+  contact:
+    name: Farecloud Team
+    url: https://farecloud.io
+    email: support@farecloud.io
   version: '1.0'
+  x-logo:
+    url: "/logo.png"
+    backgroundColor: "#FAFAFA"
+    altText: "Farecloud logo"
 servers:
 - url: https://api.farecloud.io
   variables: {}
@@ -227,7 +268,16 @@ paths:
           example: A7B312X
       - name: expectedPrice
         in: query
-        description: Same as in booking request. Amount of money in base currency you expect to pay for the tickets. expectedPrice should consist of ticket price + luggage price (if any). We recommend to add 0.5% of price on top to pass price check in case of any currency rates change. If expectedPrice param is less than real price the booking process will fail and error is returned
+        description: |
+          **Same as in booking request.**
+
+          Amount of money in base currency you expect to pay for the tickets.
+
+          expectedPrice should consist of ticket price + luggage price (if any).
+
+          We recommend to add 0.5% of price on top to pass price check in case of any currency rates change.
+
+          **If expectedPrice param is less than real price the booking process will fail and error is returned**
         required: true
         style: form
         explode: true
@@ -561,7 +611,7 @@ components:
           description: |
             Customer phone number
 
-            Required format: +(country phone code) (area code) (full number)`
+            Required format: `+(country phone code) (area code) (full number)`
           example: +12345678912
         ipAddress:
           type: string
@@ -607,7 +657,9 @@ components:
         expectedPrice:
           type: number
           description: |
-            Should consist of ticket price + luggage price (if any)
+            Amount of money in base currency you expect to pay for the tickets.
+
+            Should consist of ticket price + extra luggage price (if any)
 
             We recommend to add 0.5% of price on top to pass price check in case of any currency rates change.
 
@@ -643,7 +695,8 @@ components:
           $ref: '#/components/schemas/Gender'
         dateOfBirth:
           type: string
-          description: Format: YYYY-MM-DD`
+          description: |
+            Format: `YYYY-MM-DD`
           example: 1980-02-25
         nationality:
           type: string
