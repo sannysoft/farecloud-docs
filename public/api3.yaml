@@ -6,35 +6,77 @@ info:
 
     # Concept
 
-    to be done
+    Farecloud allows you to search flights and prices for the lowcost carriers worldwide.
+
+    All our prices are total final prices that include all the fees and charges.
+
+    ## Oneway
+
+    A low cost flight is always bookable oneway and the price for a low cost roundtrip is (more or less) equal the price for the corresponding 2 oneways.
+
+    Farecloud is a pretty oneway orientated reservation system: All search results returned by Search request are always based on oneway searches, even though if combined to roundtrips.
+
+    ## Cache
+
+    Most searches are performed on our database containing cached flight details & prices.
+
+    We do our best to update prices as fast as possible and to keep as many flight variants as possible at every single moment of time but due to cache the following problems may occur from time to time:
+
+    * Price rise/flight unavailable at Validation stage
+    * Lack of some flight variants available at the airline website - please contact us in this case
 
     # Farecloud Hub
 
-    to be done
+    You can access the web interface showing all the bookings and financial transactions at [Farecloud Hub](https://hub.farecloud.io/)
 
     # Implementation details
 
     ## Countries, Airports, Carriers data
 
-    to be done
+    At the moment we do not provide databases with countries/airports/carriers/plane types etc.
+
+    Here are some of the sources you can get this information from:
+
+    | Name | Data | Quality | Price |
+    |------|------|---------|-------|
+    | [AirHex](https://airhex.com/pricing/) | Full database + airline logos | High | $1080 |
+    | [Aviation Edge](https://aviation-edge.com/database-download/) | Full database | High | $199 |
+    | [Our Airports](http://ourairports.com/data/) | Airports + Countries | Medium | Free |
+    | [Open Flights](https://github.com/jpatokal/openflights/tree/master/data) | Full database | Free | Inaccurate |
 
     ## Authentication
 
-    Petstore offers two forms of authentication:
-    - API Key
-    - OAuth2
-    OAuth2 - an open protocol to allow secure authorization in a simple
-    and standard method from web, mobile and desktop applications.
+    Farecloud uses simple **Basic HTTP authentication** to for authenticating requests.
+
+    You can authorize requests even in:
+      * your browser - browser will ask for login and password when you open farecloud API URL
+      * curl - `curl --user login:password https://api.farecloud.io/`
+      * Any programming language and HTTP library supports Basic HTTP authentication
 
     <security-definitions />
 
     ## Error handling
 
-    to be done
+    Despite the HTTP status code returned by the farecloud API we recommend you to look at the `status` and `message` field of the response.
+
+    `message` will only appear in response in case of some problem. For example the search response may look like this:
+
+    ```
+    {
+      "status": "error",
+      "message": "date1 cannot be in the past"
+    }
+    ```
+
+    It might be a good idea to always check if `message` field is present.
 
     ## Testing
 
-    to be done
+    **We do not have testing environment and recommend you to use production environment for development/testing.**
+
+    It's important to understand that no information is sent to the airline until you execute Issue request.
+
+    That's why you can use production environment and only set `test=true` parameter for issue request for free virtual test issue.
 
   contact:
     name: Farecloud Team
@@ -157,7 +199,7 @@ paths:
       tags:
       - API Methods
       summary: Validate price & availability
-      description: Validate price & availability
+      description: Use this method in order to accurately check flight price & availability as well as to get some details of the flights like possible extra luggage options and fare rules.
       operationId: ValidatePrice&Availability
       parameters:
       - name: signature
@@ -218,7 +260,7 @@ paths:
       tags:
       - API Methods
       summary: Create booking
-      description: Book tickets
+      description: Create booking (and possibly issue tickets for it)
       operationId: CreateBooking
       parameters: []
       requestBody:
@@ -254,7 +296,14 @@ paths:
       tags:
       - API Methods
       summary: Issue tickets
-      description: Issue tickets
+      description: |
+        **This method should not be used if you set `issue=true` parameter at Booking request.**
+
+        This method will charge money from your farecloud balance and start the tickets issue process.
+
+        Method will return booking status (in most cases `waiting`) and empty airlinesPnr.
+
+        **In case of any result (even error or timeout) please use Details request to get actual booking status.**
       operationId: IssueTickets
       parameters:
       - name: bookingId
@@ -284,13 +333,54 @@ paths:
         schema:
           type: number
           example: 120.53
+      - name: test
+        in: query
+        description: |
+          **Use only for development/testing purposes**
+
+          Set to `true` for free virtual tickets issue.
+
+          Farecloud will set status to `issued` after some time and will generate a fake airline PNRs.
+        required: false
+        style: form
+        explode: true
+        schema:
+          type: boolean
+          default: false
       responses:
         200:
-          description: ''
+          description: Issue response containing current status of the booking
           content:
-            text/plain:
+            application/json:
               schema:
+                description: Response containing status of the booking and farecloud id if succesfull
+                example:
+                  status: waiting
+                  bookingId: A7B312X
+                  airlinePnr: []
                 type: object
+                properties:
+                  status:
+                    $ref: '#/components/schemas/BookingStatus'
+                    example: waiting
+                  bookingId:
+                    type: string
+                    description: Farecloud booking id
+                    example: A7B312X
+                  airlinePnrs:
+                    type: array
+                    items:
+                      type: string
+                    description: |
+                      List of airline PNR locators (booking numbers).
+
+                      If the booking has `issued` status - you can send the airline booking numbers to the customer as a confirmation of issued tickets.
+
+                      This will have 1 airline booking number for one way bookings and 2 airline numbers (in most cases) for round trip booking.
+              example:
+                status: waiting
+                bookingId: A7B312X
+                airlinePnrs: []
       security:
       - httpBasic: []
       x-operation-settings:
@@ -754,7 +844,16 @@ components:
       type: object
       properties:
         status:
-          $ref: '#/components/schemas/BookingStatus'
+          title: Booking create status
+          description: |
+            **Status description:**
+            * **booked** - Booking created
+            * **error** - Error occured
+          enum:
+          - booked
+          - error
+          type: string
+          example: booked
         bookingId:
           type: string
           description: Unique farecloud booking id - save it for future use
@@ -765,11 +864,23 @@ components:
         bookingId: A7B312X
     BookingStatus:
       title: Booking status
+      description: |
+        **Status description:**
+        * **new** - Booking created
+        * **waiting** - We are issuing the tickets
+        * **issued** - Tickets are issued
+        * **failed** - Tickets issue failed
+        * **mixed** - Please wait. Part of the booking have different statuses.
+        * **cancelled** - Booking was created but cancelled due to no activity
       enum:
-      - booked
-      - error
+      - new
+      - waiting
+      - issued
+      - failed
+      - cancelled
+      - mixed
       type: string
-      example: booked
+      example: waiting
       x-enum-elements:
       - name: booked
         description: Succesfully booked
