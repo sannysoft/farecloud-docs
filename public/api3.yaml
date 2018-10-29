@@ -27,6 +27,8 @@ info:
 
     **Your implementation should allow any undocumented JSON fields in response as we may introduce new fields at anytime.**
 
+    **It's required to pass `accept-encoding: gzip` in all HTTP requests. This will allow compressing HTTP responses for faster response time**
+
     ## General Flow
 
     There are 4 main methods available via Farecloud at the moment:
