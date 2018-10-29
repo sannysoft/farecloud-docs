@@ -36,7 +36,7 @@ info:
     - **Search** - Should be called to get all the flights and prices available for the specified route and dates. `Fast response (up to 10 seconds, normally 2-3 seconds.`
     - **Validation** - Used to accurately check for the price & luggage option for a particular flight variant. Should be
     called when the customer visits the booking page and accurate price check is required. `Request may take up to 40 seconds.`
-    - **Book** - Used to pass passenger details and all the information required for the issue the tickets. Calling book
+    - **Book** - Used to pass passenger details and all the information required to issue tickets. Calling book
     method launches the issue of the tickets and may not be cancelled. There is no way to hold the price/seats without issuing
     tickets for lowcost carriers.  `May take up to 60 seconds.`
     - **Details** - Used to get booking details (status, passengers, airline pnrs etc) after the booking was created (Book method called) `Fast response.`
