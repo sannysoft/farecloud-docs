@@ -449,7 +449,7 @@ paths:
     post:
       tags:
       - API Methods
-      summary: Create booking
+      summary: Booking
       description: |
         Create booking and launch issue process.
 
@@ -527,8 +527,20 @@ components:
       type: object
       properties:
         price:
-          description: Money type represents some amount of money
-          $ref: '#/components/schemas/Money'
+          required:
+          - currency
+          - amount
+          type: object
+          properties:
+            currency:
+              type: string
+              description: Currency 3-char code according to ISO
+              example: EUR
+            amount:
+              type: number
+              description: Amount represents value of the monetary object. It is floating point number
+              example: 94.12
+          description: Total price of the variant for all passengers
         signature:
           type: string
           description: Signature identifies combination of flights and is used for further steps like validation and booking
@@ -552,7 +564,6 @@ components:
           type: number
           description: Amount represents value of the monetary object. It is floating point number
           example: 94.12
-      description: Money type represents some amount of money
     Flight:
       title: Flight
       required:
@@ -710,7 +721,19 @@ components:
           description: Used to proceed with booking
         price:
           description: Total price for all passengers
-          $ref: '#/components/schemas/Money'
+          required:
+          - currency
+          - amount
+          type: object
+          properties:
+            currency:
+              type: string
+              description: Currency 3-char code according to ISO
+              example: EUR
+            amount:
+              type: number
+              description: Amount represents value of the monetary object. It is floating point number
+              example: 94.12
         flights:
           type: array
           items:
@@ -771,13 +794,41 @@ components:
       required:
       - code
       - price
+      - totalPrice
       type: object
       properties:
         code:
           $ref: '#/components/schemas/Luggage'
         price:
-          description: Price of the option
-          $ref: '#/components/schemas/Money'
+          description: Price of the selected luggage for all passengers
+          required:
+          - currency
+          - amount
+          type: object
+          properties:
+            currency:
+              type: string
+              description: Currency 3-char code according to ISO
+              example: EUR
+            amount:
+              type: number
+              description: Amount represents value of the monetary object. It is floating point number
+              example: 10
+        totalPrice:
+          description: Price of the selected luggage + tickets for all passengers (to be used for expectedPrice field at **Booking method**)
+          required:
+          - currency
+          - amount
+          type: object
+          properties:
+            currency:
+              type: string
+              description: Currency 3-char code according to ISO
+              example: EUR
+            amount:
+              type: number
+              description: Amount represents value of the monetary object. It is floating point number
+              example: 104.12
       description: Represents purchasable extra luggage
     BookingRequest:
       title: Booking request
