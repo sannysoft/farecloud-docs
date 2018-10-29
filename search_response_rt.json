@@ -1,0 +1,103 @@
+{
+    "status": "ok",
+    "variants": [
+        {
+            "price": {
+                "amount": 74,
+                "currency": "EUR"
+            },
+            "signature": "0_DMK_HKT_FD_3033_25JAN2019_1955_25JAN2019_2120.0_HKT_DMK_FD_3036_02FEB2019_0600_02FEB2019_0720",
+            "flights": [
+                {
+                    "marketingCarrier": "FD",
+                    "operatingCarrier": "FD",
+                    "departureDateTime": "2019-01-25 19:55",
+                    "arrivalDateTime": "2019-01-25 21:20",
+                    "cabin": "Y",
+                    "plane": "",
+                    "arrivalTerminal": "",
+                    "departureTerminal": "",
+                    "number": "3033",
+                    "from": "DMK",
+                    "to": "HKT",
+                    "bookingClass": "",
+                    "segmentIndex": 0,
+                    "includedLuggage": "",
+                    "handLuggage": {
+                        "dimensions": "56x36x23",
+                        "weight": 7
+                    }
+                },
+                {
+                    "marketingCarrier": "FD",
+                    "operatingCarrier": "FD",
+                    "departureDateTime": "2019-02-02 06:00",
+                    "arrivalDateTime": "2019-02-02 07:20",
+                    "cabin": "Y",
+                    "plane": "",
+                    "arrivalTerminal": "",
+                    "departureTerminal": "",
+                    "number": "3036",
+                    "from": "HKT",
+                    "to": "DMK",
+                    "bookingClass": "",
+                    "segmentIndex": 1,
+                    "includedLuggage": "",
+                    "handLuggage": {
+                        "dimensions": "56x36x23",
+                        "weight": 7
+                    }
+                }
+            ]
+        },
+        {
+            "price": {
+                "amount": 74,
+                "currency": "EUR"
+            },
+            "signature": "0_DMK_HKT_FD_3033_25JAN2019_1955_25JAN2019_2120.0_HKT_DMK_FD_3042_02FEB2019_0640_02FEB2019_0750",
+            "flights": [
+                {
+                    "marketingCarrier": "FD",
+                    "operatingCarrier": "FD",
+                    "departureDateTime": "2019-01-25 19:55",
+                    "arrivalDateTime": "2019-01-25 21:20",
+                    "cabin": "Y",
+                    "plane": "",
+                    "arrivalTerminal": "",
+                    "departureTerminal": "",
+                    "number": "3033",
+                    "from": "DMK",
+                    "to": "HKT",
+                    "bookingClass": "",
+                    "segmentIndex": 0,
+                    "includedLuggage": "",
+                    "handLuggage": {
+                        "dimensions": "56x36x23",
+                        "weight": 7
+                    }
+                },
+                {
+                    "marketingCarrier": "FD",
+                    "operatingCarrier": "FD",
+                    "departureDateTime": "2019-02-02 06:40",
+                    "arrivalDateTime": "2019-02-02 07:50",
+                    "cabin": "Y",
+                    "plane": "",
+                    "arrivalTerminal": "",
+                    "departureTerminal": "",
+                    "number": "3042",
+                    "from": "HKT",
+                    "to": "DMK",
+                    "bookingClass": "",
+                    "segmentIndex": 1,
+                    "includedLuggage": "",
+                    "handLuggage": {
+                        "dimensions": "56x36x23",
+                        "weight": 7
+                    }
+                }
+            ]
+        }
+    ]
+}

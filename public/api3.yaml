@@ -191,11 +191,190 @@ paths:
       responses:
         200:
           description: Search response containing bookable flight options (variants).
+          x-summary: One way search
           content:
             application/json:
               schema:
                 description: Search response containing bookable flight options (variants).
                 $ref: '#/components/schemas/SearchResponse'
+              examples:
+                oneWay:
+                  summary: "One way"
+                  value:
+                    status: ok
+                    variants:
+                    - price:
+                        amount: 37.3
+                        currency: EUR
+                      signature: 0_DMK_HKT_FD_3033_25JAN2019_1955_25JAN2019_2120
+                      flights:
+                      - marketingCarrier: FD
+                        operatingCarrier: FD
+                        departureDateTime: 2019-01-25 19:55
+                        arrivalDateTime: 2019-01-25 21:20
+                        cabin: Y
+                        plane: ''
+                        arrivalTerminal: ''
+                        departureTerminal: ''
+                        number: '3033'
+                        from: DMK
+                        to: HKT
+                        bookingClass: ''
+                        segmentIndex: 0
+                        includedLuggage: ''
+                        handLuggage:
+                          dimensions: 56x36x23
+                          weight: 7
+                    - price:
+                        amount: 47.89
+                        currency: EUR
+                      signature: 0_DMK_HKT_FD_3017_25JAN2019_1520_25JAN2019_1650
+                      flights:
+                      - marketingCarrier: FD
+                        operatingCarrier: FD
+                        departureDateTime: 2019-01-25 15:20
+                        arrivalDateTime: 2019-01-25 16:50
+                        cabin: Y
+                        plane: ''
+                        arrivalTerminal: ''
+                        departureTerminal: ''
+                        number: '3017'
+                        from: DMK
+                        to: HKT
+                        bookingClass: ''
+                        segmentIndex: 0
+                        includedLuggage: ''
+                        handLuggage:
+                          dimensions: 56x36x23
+                          weight: 7
+                    - price:
+                        amount: 47.89
+                        currency: EUR
+                      signature: 0_DMK_HKT_FD_3031_25JAN2019_1535_25JAN2019_1730
+                      flights:
+                      - marketingCarrier: FD
+                        operatingCarrier: FD
+                        departureDateTime: 2019-01-25 15:35
+                        arrivalDateTime: 2019-01-25 17:30
+                        cabin: Y
+                        plane: ''
+                        arrivalTerminal: ''
+                        departureTerminal: ''
+                        number: '3031'
+                        from: DMK
+                        to: HKT
+                        bookingClass: ''
+                        segmentIndex: 0
+                        includedLuggage: ''
+                        handLuggage:
+                          dimensions: 56x36x23
+                          weight: 7
+                    - price:
+                        amount: 47.89
+                        currency: EUR
+                      signature: 0_DMK_HKT_FD_3015_25JAN2019_2115_25JAN2019_2240
+                      flights:
+                      - marketingCarrier: FD
+                        operatingCarrier: FD
+                        departureDateTime: 2019-01-25 21:15
+                        arrivalDateTime: 2019-01-25 22:40
+                        cabin: Y
+                        plane: ''
+                        arrivalTerminal: ''
+                        departureTerminal: ''
+                        number: '3015'
+                        from: DMK
+                        to: HKT
+                        bookingClass: ''
+                        segmentIndex: 0
+                        includedLuggage: ''
+                        handLuggage:
+                          dimensions: 56x36x23
+                          weight: 7
+
+                roundTrip:
+                  summary: "Round trip"
+                  value:
+                    status: ok
+                    variants:
+                    - price:
+                        amount: 74
+                        currency: EUR
+                      signature: 0_DMK_HKT_FD_3033_25JAN2019_1955_25JAN2019_2120.0_HKT_DMK_FD_3036_02FEB2019_0600_02FEB2019_0720
+                      flights:
+                      - marketingCarrier: FD
+                        operatingCarrier: FD
+                        departureDateTime: 2019-01-25 19:55
+                        arrivalDateTime: 2019-01-25 21:20
+                        cabin: Y
+                        plane: ''
+                        arrivalTerminal: ''
+                        departureTerminal: ''
+                        number: '3033'
+                        from: DMK
+                        to: HKT
+                        bookingClass: ''
+                        segmentIndex: 0
+                        includedLuggage: ''
+                        handLuggage:
+                          dimensions: 56x36x23
+                          weight: 7
+                      - marketingCarrier: FD
+                        operatingCarrier: FD
+                        departureDateTime: 2019-02-02 06:00
+                        arrivalDateTime: 2019-02-02 07:20
+                        cabin: Y
+                        plane: ''
+                        arrivalTerminal: ''
+                        departureTerminal: ''
+                        number: '3036'
+                        from: HKT
+                        to: DMK
+                        bookingClass: ''
+                        segmentIndex: 1
+                        includedLuggage: ''
+                        handLuggage:
+                          dimensions: 56x36x23
+                          weight: 7
+                    - price:
+                        amount: 74
+                        currency: EUR
+                      signature: 0_DMK_HKT_FD_3033_25JAN2019_1955_25JAN2019_2120.0_HKT_DMK_FD_3042_02FEB2019_0640_02FEB2019_0750
+                      flights:
+                      - marketingCarrier: FD
+                        operatingCarrier: FD
+                        departureDateTime: 2019-01-25 19:55
+                        arrivalDateTime: 2019-01-25 21:20
+                        cabin: Y
+                        plane: ''
+                        arrivalTerminal: ''
+                        departureTerminal: ''
+                        number: '3033'
+                        from: DMK
+                        to: HKT
+                        bookingClass: ''
+                        segmentIndex: 0
+                        includedLuggage: ''
+                        handLuggage:
+                          dimensions: 56x36x23
+                          weight: 7
+                      - marketingCarrier: FD
+                        operatingCarrier: FD
+                        departureDateTime: 2019-02-02 06:40
+                        arrivalDateTime: 2019-02-02 07:50
+                        cabin: Y
+                        plane: ''
+                        arrivalTerminal: ''
+                        departureTerminal: ''
+                        number: '3042'
+                        from: HKT
+                        to: DMK
+                        bookingClass: ''
+                        segmentIndex: 1
+                        includedLuggage: ''
+                        handLuggage:
+                          dimensions: 56x36x23
+                          weight: 7
       security:
       - httpBasic: []
       x-operation-settings:
