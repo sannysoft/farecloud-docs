@@ -4,17 +4,13 @@ info:
   description: |
     Farecloud API allows you to search for flights and availability and book tickets.
 
+    **Please note: All the request/response elements having small right arrow at the end of the name are expandable on click.**
+
     # Concept
 
     Farecloud allows you to search flights and prices for the lowcost carriers worldwide.
 
     All our prices are total final prices that include all the fees and charges.
-
-    ## Oneway
-
-    A low cost flight is always bookable oneway and the price for a low cost roundtrip is (more or less) equal the price for the corresponding 2 oneways.
-
-    Farecloud is a pretty oneway orientated reservation system: All search results returned by Search request are always based on oneway searches, even though if combined to roundtrips.
 
     ## Cache
 
@@ -25,11 +21,23 @@ info:
     * Price rise/flight unavailable at Validation stage
     * Lack of some flight variants available at the airline website - please contact us in this case
 
-    # Farecloud Hub
-
-    You can access the web interface showing all the bookings and financial transactions at [Farecloud Hub](https://hub.farecloud.io/)
-
     # Implementation details
+
+    All the responses from Farecloud API are in JSON format.
+
+    **Your implementation should allow any undocumented JSON fields in response as we may introduce new fields at anytime.**
+
+    ## General Flow
+
+    There are 4 main methods available via Farecloud at the moment:
+
+    - **Search** - Should be called to get all the flights and prices available for the specified route and dates. `Fast response (up to 10 seconds, normally 2-3 seconds.`
+    - **Validation** - Used to accurately check for the price & luggage option for a particular flight variant. Should be
+    called when the customer visits the booking page and accurate price check is required. `Request may take up to 40 seconds.`
+    - **Book** - Used to pass passenger details and all the information required for the issue the tickets. Calling book
+    method launches the issue of the tickets and may not be cancelled. There is no way to hold the price/seats without issuing
+    tickets for lowcost carriers.  `May take up to 60 seconds.`
+    - **Details** - Used to get booking details (status, passengers, airline pnrs etc) after the booking was created (Book method called) `Fast response.`
 
     ## Countries, Airports, Carriers data
 
@@ -76,7 +84,7 @@ info:
 
     It's important to understand that no information is sent to the airline until you execute Issue request.
 
-    That's why you can use production environment and only set `test=true` parameter for issue request for free virtual test issue.
+    That's why you can use production environment and only set `test=true` parameter for Book method for free virtual test issue.
 
   contact:
     name: Farecloud Team
@@ -128,7 +136,8 @@ paths:
         explode: true
         schema:
           type: string
-          example: 2019-01-25
+          format: date
+          example: "2019-01-25"
       - name: date2
         in: query
         description: |
@@ -139,7 +148,7 @@ paths:
         explode: true
         schema:
           type: string
-          example: 2019-02-02
+          example: "2019-02-02"
           format: date
       - name: adults
         in: query
@@ -260,7 +269,16 @@ paths:
       tags:
       - API Methods
       summary: Create booking
-      description: Create booking (and possibly issue tickets for it)
+      description: |
+        Create booking and launch issue process.
+
+        This method will charge money from your Farecloud balance and start the tickets issue process.
+
+        Method will return booking status (in most cases `waiting`) and empty airlinesPnr.  If the response `status` field is not `error` - the booking created succesfully and should be issued soon.
+
+        **In case of any result (even error or timeout) please use Details request to get actual booking status.**
+
+        You should call **Details method** every 30 seconds to update booking status.
       operationId: CreateBooking
       parameters: []
       requestBody:
@@ -282,105 +300,8 @@ paths:
                   bookingId: A7B312X
                 $ref: '#/components/schemas/BookingResponse'
               example:
-                status: booked
-                bookingId: A7B312X
-      security:
-      - httpBasic: []
-      x-operation-settings:
-        CollectParameters: false
-        AllowDynamicQueryParameters: false
-        AllowDynamicFormParameters: false
-        IsMultiContentStreaming: false
-  /issue:
-    get:
-      tags:
-      - API Methods
-      summary: Issue tickets
-      description: |
-        **This method should not be used if you set `issue=true` parameter at Booking request.**
-
-        This method will charge money from your farecloud balance and start the tickets issue process.
-
-        Method will return booking status (in most cases `waiting`) and empty airlinesPnr.
-
-        **In case of any result (even error or timeout) please use Details request to get actual booking status.**
-      operationId: IssueTickets
-      parameters:
-      - name: bookingId
-        in: query
-        description: Farecloud booking id returned from the booking stage. This is the id of the booking you want to issue
-        required: true
-        style: form
-        explode: true
-        schema:
-          type: string
-          example: A7B312X
-      - name: expectedPrice
-        in: query
-        description: |
-          **Same as in booking request.**
-
-          Amount of money in base currency you expect to pay for the tickets.
-
-          expectedPrice should consist of ticket price + luggage price (if any).
-
-          We recommend to add 0.5% of price on top to pass price check in case of any currency rates change.
-
-          **If expectedPrice param is less than real price the booking process will fail and error is returned**
-        required: true
-        style: form
-        explode: true
-        schema:
-          type: number
-          example: 120.53
-      - name: test
-        in: query
-        description: |
-          **Use only for development/testing purposes**
-
-          Set to `true` for free virtual tickets issue.
-
-          Farecloud will set status to `issued` after some time and will generate a fake airline PNRs.
-        required: false
-        style: form
-        explode: true
-        schema:
-          type: boolean
-          default: false
-      responses:
-        200:
-          description: Issue response containing current status of the booking
-          content:
-            application/json:
-              schema:
-                description: Response containing status of the booking and farecloud id if succesfull
-                example:
-                  status: waiting
-                  bookingId: A7B312X
-                  airlinePnr: []
-                type: object
-                properties:
-                  status:
-                    $ref: '#/components/schemas/BookingStatus'
-                    example: waiting
-                  bookingId:
-                    type: string
-                    description: Farecloud booking id
-                    example: A7B312X
-                  airlinePnrs:
-                    type: array
-                    items:
-                      type: string
-                    description: |
-                      List of airline PNR locators (booking numbers).
-
-                      If the booking has `issued` status - you can send the airline booking numbers to the customer as a confirmation of issued tickets.
-
-                      This will have 1 airline booking number for one way bookings and 2 airline numbers (in most cases) for round trip booking.
-              example:
                 status: waiting
                 bookingId: A7B312X
-                airlinePnrs: []
       security:
       - httpBasic: []
       x-operation-settings:
@@ -682,8 +603,6 @@ components:
       required:
       - email
       - phone
-      - ipAddress
-      - userAgent
       - requestOrigin
       - signature
       - passengers
@@ -703,20 +622,6 @@ components:
 
             Required format: `+(country phone code) (area code) (full number)`
           example: +12345678912
-        ipAddress:
-          type: string
-          description: |
-            We recommend to pass real customer ip address here.
-
-            In case it's not available - you can use 1.1.1.1
-          example: 1.1.1.1
-        userAgent:
-          type: string
-          description: |
-            We recommend to pass real customer real user agent.
-
-            You can pass empty string if the information is not available.
-          example: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.67 Safari/537.36
         requestOrigin:
           type: string
           description: Should contain the website domain / company name and locale used to book tickets
@@ -755,13 +660,16 @@ components:
 
             **If expectedPrice param is less than real price the booking process will fail and error is returned**
           example: 120.53
-        issue:
-          type: boolean
+        test:
           description: |
-            **We recommend to set this flag to true for all bookings.**
+            **Use only for development/testing purposes**
 
-            At the moment Farecloud doesn't allow holding seats with book method so there is not many reasons to call issue separately instead of setting flag.
-          example: false
+            Set to `true` for free virtual tickets issue.
+
+            Farecloud will set status to `issued` after some time and will generate a fake airline PNRs.
+          required: false
+          type: boolean
+          default: false
     PassengerDetails:
       title: Passenger details
       required:
@@ -844,15 +752,8 @@ components:
       type: object
       properties:
         status:
-          title: Booking create status
-          description: |
-            **Status description:**
-            * **booked** - Booking created
-            * **error** - Error occured
-          enum:
-          - booked
-          - error
-          type: string
+          title: Booking status
+          $ref: '#/components/schemas/BookingStatus'
           example: booked
         bookingId:
           type: string
@@ -867,6 +768,7 @@ components:
       description: |
         **Status description:**
         * **new** - Booking created
+        * **error** - Unable to create booking
         * **waiting** - We are issuing the tickets
         * **issued** - Tickets are issued
         * **failed** - Tickets issue failed
