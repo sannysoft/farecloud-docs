@@ -84,8 +84,6 @@ info:
 
     **We do not have testing environment and recommend you to use production environment for development/testing.**
 
-    It's important to understand that no information is sent to the airline until you execute Issue request.
-
     That's why you can use production environment and only set `test=true` parameter for Book method for free virtual test issue.
 
   contact:
