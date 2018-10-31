@@ -18,7 +18,7 @@ info:
 
     We do our best to update prices as fast as possible and to keep as many flight variants as possible at every single moment of time but due to cache the following problems may occur from time to time:
 
-    * Price rise/flight unavailable at Validation stage
+    * Price rise/flight unavailable at Validation (pre-booking) stage
     * Lack of some flight variants available at the airline website - please contact us in this case
 
     # Implementation details
@@ -43,16 +43,16 @@ info:
 
     ## Countries, Airports, Carriers data
 
-    At the moment we do not provide databases with countries/airports/carriers/plane types etc.
-
-    Here are some of the sources you can get this information from:
+    We provide data using industry coding standards such as IATA and ICAO codes for carriers, airports and countries. There are some coding directory providers you can use in order to interpret these codes:
 
     | Name | Data | Quality | Price |
     |------|------|---------|-------|
-    | [AirHex](https://airhex.com/pricing/) | Full database + airline logos | High | $1080 |
+    | [AirHex](https://airhex.com) | Full database + airline logos | High | ~~$1080~~ Free*|
     | [Aviation Edge](https://aviation-edge.com/database-download/) | Full database | High | $199 |
     | [Our Airports](http://ourairports.com/data/) | Airports + Countries | Medium | Free |
     | [Open Flights](https://github.com/jpatokal/openflights/tree/master/data) | Full database | Inaccurate | Free |
+
+    * Free for Farecloud customers, contact us for more information
 
     ## Authentication
 
@@ -82,9 +82,7 @@ info:
 
     ## Testing
 
-    **We do not have testing environment and recommend you to use production environment for development/testing.**
-
-    That's why you can use production environment and only set `test=true` parameter for Book method for free virtual test issue.
+    Use "test=true" parameter for Issue method in order to test virtual ticket issuing. There are no dedicated test environment and all data is live and actual. Please note that no information is sent to the airline until you execute Issue request in order to issue tickets for specific booking.
 
   contact:
     name: Farecloud Team
