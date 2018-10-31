@@ -882,11 +882,11 @@ components:
         expectedPrice:
           type: number
           description: |
-            Amount of money in base currency you expect to pay for the tickets.
+            Amount of money in base currency you expect to pay for the tickets for this booking.
 
-            Should consist of ticket price + extra luggage price (if any)
+            This is a parameter that allows you to set a threshold for currency and airfare fluctuations that might slightly change during the booking process. We recommend to add 0.5% to the total amount of booking as a safety threshold, however it's up to you and varies depending on time you need to complete the booking.
 
-            We recommend to add 0.5% of price on top to pass price check in case of any currency rates change.
+            It should consist of ticket price + extra luggage price (if any).
 
             **If expectedPrice param is less than real price the booking process will fail and error is returned**
           example: 120.53
@@ -1027,3 +1027,4 @@ security:
 tags:
 - name: API Methods
   description: ''
+  
