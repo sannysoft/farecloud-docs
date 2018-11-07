@@ -25,7 +25,7 @@ info:
 
     All the responses from Farecloud API are in JSON format.
 
-    **Your implementation should allow any undocumented JSON fields in response as we may introduce new fields at anytime.**
+    **Your implementation should allow any undocumented JSON fields in response as we may introduce new fields at anytime. Order of JSON fields in response is not guaranteed - please use order-independent JSON parsing.**
 
     **It's required to pass `accept-encoding: gzip` in all HTTP requests. This will allow compressing HTTP responses for faster response time**
 
@@ -455,7 +455,7 @@ paths:
 
         **In case of any result (even error or timeout) please use Details request to get actual booking status.**
 
-        You should call **Details method** every 30 seconds to update booking status.
+        You should call **Get booking details method** every 30 seconds to update booking status.
       operationId: CreateBooking
       parameters: []
       requestBody:
@@ -479,6 +479,38 @@ paths:
               example:
                 status: waiting
                 bookingId: A7B312X
+      security:
+      - httpBasic: []
+      x-operation-settings:
+        CollectParameters: false
+        AllowDynamicQueryParameters: false
+        AllowDynamicFormParameters: false
+        IsMultiContentStreaming: false
+  /details:
+    get:
+      tags:
+      - API Methods
+      summary: Get booking details
+      description: Use this method to get actual booking status, airline PNRs and all the booking details.
+      operationId: GetDetails
+      parameters:
+      - name: id
+        in: query
+        description: Id of the booking (returned from Book method)
+        required: true
+        style: form
+        explode: true
+        schema:
+          type: string
+          example: DE0442
+      responses:
+        200:
+          description: Get booking details response contains all of the booking details
+          content:
+            application/json:
+              schema:
+                description: Get booking details response contains all of the booking details
+                $ref: '#/components/schemas/DetailsResponse'
       security:
       - httpBasic: []
       x-operation-settings:
@@ -1016,6 +1048,168 @@ components:
         description: Succesfully booked
       - name: error
         description: Result should also contain text "message" field with error details
+    DetailsResponse:
+      title: Validate response
+      required:
+      - number
+      - bookingStatus
+      - airlinePnrs
+      - price
+      - fareRules
+      - flights
+      - passengers
+      - purchasedLuggage
+      - test
+      - transactions
+      type: object
+      properties:
+        number:
+          type: string
+          description: Booking id
+          example: DE0442
+        bookingStatus:
+          $ref: '#/components/schemas/BookingStatus'
+        airlinePnrs:
+          type: array
+          description: List of airline booking numbers (PNRs) - 1 PNR for one way, 1 or 2 for round trip
+          items:
+            type: string
+            example: DE0442
+        price:
+          description: Total price for all passengers
+          required:
+          - currency
+          - amount
+          type: object
+          properties:
+            currency:
+              type: string
+              description: Currency 3-char code according to ISO
+              example: EUR
+            amount:
+              type: number
+              description: Amount represents value of the monetary object. It is floating point number
+              example: 94.12
+        fareRules:
+          type: string
+          description: Fare rules
+          example: Non-refundable and non-changeable
+        flights:
+          type: array
+          items:
+            $ref: '#/components/schemas/Flight'
+          description: Flights
+        passengers:
+          type: array
+          items:
+            allOf:
+            - type: object
+              required:
+              - type
+              properties:
+                type:
+                  description: |
+                    **Passenger type:**
+                    * **A** - Adult
+                    * **C** - Child
+                    * **I** - Infant
+                  enum:
+                  - A
+                  - C
+                  - I
+                  type: string
+                  example: A
+            - $ref: '#/components/schemas/PassengerDetails'
+          description: |
+            List of passengers details.
+        purchasedLuggage:
+          type: object
+          title: Luggage
+          description: Purchased luggage
+          required:
+          - code
+          - price
+          - totalPrice
+          properties:
+            code:
+              $ref: '#/components/schemas/Luggage'
+            price:
+              description: Price of the selected luggage for all passengers
+              required:
+              - currency
+              - amount
+              type: object
+              properties:
+                currency:
+                  type: string
+                  description: Currency 3-char code according to ISO
+                  example: EUR
+                amount:
+                  type: number
+                  description: Amount represents value of the monetary object. It is floating point number
+                  example: 10
+        test:
+          type: boolean
+          description: Is test booking (in case test=true) or real (test=false)
+          example: false
+        transactions:
+          type: array
+          description: Charges to your deposit linked to this booking
+          items:
+            $ref: '#/components/schemas/Transaction'
+    Transaction:
+      title: Charge/refund/deposit to your deposit
+      required:
+      - date
+      - amount
+      - currency
+      - comment
+      - type
+      - test
+      type: object
+      properties:
+        date:
+          type: string
+          description: |
+            Date and time of transaction (UTC)
+
+            Format: `YYYY-MM-DD hh:mm`
+          example: 2018-11-07 05:46
+        amount:
+          type: float
+          description: |
+            Amount of the transaction
+
+            Negative for charges. Positive for refunds and deposits.
+          example: -21
+        currency:
+          type: string
+          description: Currency of the charge (at the moment EUR always)
+          example: EUR
+        comment:
+          type: string
+          description: Description of the charge in custom format
+          example: Issue of DE0442
+        type:
+          $ref: '#/components/schemas/TransactionType'
+        test:
+          type: boolean
+          description: Is test charge (in case test=true) or real (test=false)
+          example: false
+    TransactionType:
+      description: |
+        **Transaction type:**
+        * **booking** - Tickets issue transaction
+        * **additional** - Additional charge (luggage, tickets change etc)
+        * **refund** - Refund of funds for tickets
+        * **topup** - Deposit (not linked to bookings)
+      enum:
+      - booking
+      - additional
+      - refund
+      - topup
+      type: string
+      example: booking
   securitySchemes:
     httpBasic:
       type: http
