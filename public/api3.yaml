@@ -23,6 +23,8 @@ info:
 
     # Implementation details
 
+    Base URL for the requests is **https://api.farecloud.io/v1/**. You have to append method name to the base URL.
+
     All the responses from Farecloud API are in JSON format.
 
     **Your implementation should allow any undocumented JSON fields in response as we may introduce new fields at anytime. Order of JSON fields in response is not guaranteed - please use order-independent JSON parsing.**
@@ -47,7 +49,7 @@ info:
 
     | Name | Data | Quality | Price |
     |------|------|---------|-------|
-    | [AirHex](https://airhex.com) | Full database + airline logos | High | ~~$1080~~ |
+    | [AirHex](https://airhex.com) | Full database + airline logos | High | $1080 |
     | [Aviation Edge](https://aviation-edge.com/database-download/) | Full database | High | $199 |
     | [Our Airports](http://ourairports.com/data/) | Airports + Countries | Medium | Free |
     | [Open Flights](https://github.com/jpatokal/openflights/tree/master/data) | Full database | Inaccurate | Free |
