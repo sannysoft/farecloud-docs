@@ -35,12 +35,12 @@ info:
 
     There are 4 main methods available via Farecloud at the moment:
 
-    - **Search** - Should be called to get all the flights and prices available for the specified route and dates. `Fast response (up to 10 seconds, normally 2-3 seconds.`
+    - **Search** - Should be called to get all the flights and prices available for the specified route and dates. `Fast response (up to 10 seconds, normally 3-5 seconds.`
     - **Validation** - Used to accurately check for the price & luggage option for a particular flight variant. Should be
     called when the customer visits the booking page and accurate price check is required. `Request may take up to 40 seconds.`
     - **Book** - Used to pass passenger details and all the information required to issue tickets. Calling book
     method launches the issue of the tickets and may not be cancelled. There is no way to hold the price/seats without issuing
-    tickets for lowcost carriers.  `May take up to 60 seconds.`
+    tickets for lowcost carriers.  Issue process doesn't end when response is received. You need to call Details method or use webhooks to get issue status. `May take up to 60 seconds.`
     - **Details** - Used to get booking details (status, passengers, airline pnrs etc) after the booking was created (Book method called) `Fast response.`
 
     ## Countries, Airports, Carriers data
@@ -80,9 +80,141 @@ info:
 
     It might be a good idea to always check if `message` field is present.
 
+    ## Webhooks
+
+    Farecloud can send POST requests to your URL when any of your bookings have status update.
+    Please provide Farecloud with your webhook URL. POST requests contains JSON with 2 fields: type and data.
+
+    Type can be one of:
+    - issue_started
+    - issued
+    - failed
+    - bp_avaialble (Boarding passes available for your flight - most of bookings wouldn't send boarding passes)
+
+    You should return any response for the webhook call with the OK HTTP status code (200).
+    In case of webhook failure (Non-200 code or any other problem) webhook call will be repeated every minute for no longer than 2 hours.
+
+
+    Example:
+    ```
+    {
+        "type": "issued",
+        "data": {
+            "number": "29D2DF",
+            "createdAt": "2019-09-17 09:58",
+            "luggageAdded": "20",
+            "locators": ["DAZYCX"],
+            "pnrs": [{
+                "id": 13857,
+                "status": "issued",
+                "airlinePnrs": ["DAZYCX"],
+                "fareRules": null,
+                "flights": [{
+                    "marketingCarrier": "PC",
+                    "marketingCarrierFull": "PC",
+                    "operatingCarrier": "PC",
+                    "departureDateTime": "2019-09-19 14:30",
+                    "arrivalDateTime": "2019-09-19 17:35",
+                    "cabin": "Y",
+                    "plane": "",
+                    "arrivalTerminal": "",
+                    "departureTerminal": "",
+                    "number": "389",
+                    "from": "DME",
+                    "to": "SAW",
+                    "bookingClass": "",
+                    "segmentIndex": 0,
+                    "includedLuggage": "",
+                    "handLuggage": {
+                        "dimensions": "55x40x20",
+                        "weight": 10
+                    },
+                    "charter": false
+                }],
+                "purchasedLuggage": {
+                    "code": "20",
+                    "price": {
+                        "amount": 26,
+                        "currency": "EUR"
+                    }
+                },
+                "ticketNumbers": [],
+                "bpUrls": [],
+                "creditCard": null
+            }],
+            "flights": [{
+                "marketingCarrier": "PC",
+                "marketingCarrierFull": "PC",
+                "operatingCarrier": "PC",
+                "departureDateTime": "2019-09-19 14:30",
+                "arrivalDateTime": "2019-09-19 17:35",
+                "cabin": "Y",
+                "plane": "",
+                "arrivalTerminal": "",
+                "departureTerminal": "",
+                "number": "389",
+                "from": "DME",
+                "to": "SAW",
+                "bookingClass": "",
+                "segmentIndex": 0,
+                "includedLuggage": "",
+                "handLuggage": {
+                    "dimensions": "55x40x20",
+                    "weight": 10
+                },
+                "charter": false,
+                "planeName": null,
+                "marketingCarrierName": "Pegasus Airlines",
+                "operatingCarrierName": "Pegasus Airlines",
+                "fromFull": {
+                    "iata": "DME",
+                    "airportName": "Moscow Domodedovo Airport",
+                    "cityName": "Moscow",
+                    "countryIso": "RU",
+                    "countryName": "Russia",
+                    "terminal": null
+                },
+                "toFull": {
+                    "iata": "SAW",
+                    "cityName": "Istanbul",
+                    "airportName": "Sabiha Gokcen International Airport",
+                    "countryIso": "TR",
+                    "countryName": "Turkey",
+                    "terminal": null
+                },
+                "pnrIndex": 0
+            }],
+            "passengers": [{
+                "type": "A",
+                "firstName": "ALEX",
+                "lastName": "KOTIGOV",
+                "sex": "M",
+                "dateOfBirth": "1978-06-05",
+                "nationality": "RU",
+                "passportNumber": "720160495",
+                "passportExpirationDate": "2021-10-20"
+            }],
+            "transactions": [{
+                "partner": "jetcompass",
+                "date": "2019-09-17 09:58",
+                "amount": -163,
+                "currency": "EUR",
+                "comment": "Issue of 29D2DF",
+                "type": "booking"
+            }],
+            "bpUrls": [],
+            "price": 163,
+            "email": "some-test-email@emails.com",
+            "phone": "+79851234567",
+            "partnerId": "972X2NA",
+            "status": "issued"
+        }
+    }
+    ```
+
     ## Testing
 
-    Use "test=true" parameter for Issue method in order to test virtual ticket issuing. There are no dedicated test environment and all data is live and actual. Please note that no information is sent to the airline until you execute Issue request in order to issue tickets for specific booking.
+    Use "test=true" parameter for Issue method in order to test virtual ticket issuing. There are no dedicated test environment and all data is live and actual. Please note that no information is sent to the airline until the tickets issue is initiated.
 
   contact:
     name: Farecloud Team
@@ -455,7 +587,7 @@ paths:
 
         **In case of any result (even error or timeout) please use Details request to get actual booking status.**
 
-        You should call **Get booking details method** every 30 seconds to update booking status.
+        You should call **Get booking details method** periodically to update booking status or configure webhooks on your side.
       operationId: CreateBooking
       parameters: []
       requestBody:
@@ -610,6 +742,7 @@ components:
       - segmentIndex
       - includedLuggage
       - handLuggage
+      - charter
       type: object
       properties:
         marketingCarrier:
@@ -683,6 +816,10 @@ components:
         handLuggage:
           description: Represents hand luggage free allowance
           $ref: '#/components/schemas/HandLuggage'
+        charter:
+          example: false
+          type: boolean
+          description: true if it's a charter flight
     Cabin:
       title: cabin
       enum:
@@ -738,7 +875,6 @@ components:
       - price
       - flights
       - passportRequired
-      - fareRules
       - luggageOptions
       type: object
       properties:
@@ -772,10 +908,10 @@ components:
           description: Shows if passport details (number and expiration date) is required to book tickets
         passengers:
           $ref: '#/components/schemas/PassengersCount'
-        fareRules:
-          type: string
-          description: Variant fare rules
-          example: Non-refundable and non-changeable
+#        fareRules:
+#          type: string
+#          description: Variant fare rules
+#          example: Non-refundable and non-changeable
         luggageOptions:
           type: array
           items:
@@ -1032,7 +1168,6 @@ components:
         * **waiting** - We are issuing the tickets
         * **issued** - Tickets are issued
         * **failed** - Tickets issue failed
-        * **mixed** - Please wait. Part of the booking have different statuses.
         * **cancelled** - Booking was created but cancelled due to no activity
       enum:
       - new
@@ -1040,7 +1175,7 @@ components:
       - issued
       - failed
       - cancelled
-      - mixed
+      - error
       type: string
       example: waiting
       x-enum-elements:
